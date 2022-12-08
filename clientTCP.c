@@ -8,7 +8,7 @@
 #include <arpa/inet.h>
 #include <stdlib.h>
 #include <unistd.h>
-
+#include "parsing.c"
 #include <string.h>
 
 #define SERVER_PORT 6000
@@ -16,8 +16,29 @@
 
 int main(int argc, char **argv) {
 
-    if (argc > 1)
-        printf("**** No arguments needed. They will be ignored. Carrying ON.\n");
+    if (argc != 2) {
+        fprintf(stderr, "usage: download ftp://[<user>:<password>@]<host>/<url-path>\n");
+        exit(0);
+    }
+
+    arguments arguments;
+    char urlc[256];
+    strcpy(urlc,argv[1]);
+
+    memset(arguments.file_name, 0, 256);
+    memset(arguments.host, 0, 256);
+    memset(arguments.host_name, 0, 256);
+    memset(arguments.ip, 0, 256);
+    memset(arguments.password, 0, 256);
+    memset(arguments.url_path, 0, 256);
+    memset(arguments.user, 0, 256);
+    
+    if(parse_args(urlc, &arguments) == -1){
+        printf("usage: %s ftp://[<user>:<password>]@<host>/<url-path>\n", argv[1]);
+        return -1;
+    }
+    printf("host: %s\nurl path: %s\nuser: %s\npassword: %s\nfile name: %s\nhost name: %s\nip addr: %s\n", arguments.host, arguments.url_path, arguments.user, arguments.password, arguments.file_name, arguments.host_name, arguments.ip);
+    
     int sockfd;
     struct sockaddr_in server_addr;
     char buf[] = "Mensagem de teste na travessia da pilha TCP/IP\n";
@@ -39,7 +60,7 @@ int main(int argc, char **argv) {
                 (struct sockaddr *) &server_addr,
                 sizeof(server_addr)) < 0) {
         perror("connect()");
-        exit(-1);
+        return -1;
     }
     /*send a string to the server*/
     bytes = write(sockfd, buf, strlen(buf));
