@@ -1,10 +1,14 @@
-#include <stdlib.h>
+#ifndef __PARSING_H
+#define __PARSING_H
+
 #include <stdio.h>
 #include <string.h>
 #include <netdb.h> 
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <stdlib.h>
+
 #define FALSE 0
 #define TRUE 1
 
@@ -24,3 +28,4 @@ int get_ip(char *host, arguments *arguments);
 
 int get_filename(arguments *arguments);
 
+#endif
