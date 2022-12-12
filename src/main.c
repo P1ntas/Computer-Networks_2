@@ -66,7 +66,7 @@ int main(int argc, char **argv) {
     }
 
 
-    char* retr_command = malloc(5 + strlen(arguments.url_path) + 2);
+    char* retr_command = malloc(5 + strlen(arguments.url_path) + 3);
     retr_command[0] = '\0';
 
     strcat(retr_command, "retr ");

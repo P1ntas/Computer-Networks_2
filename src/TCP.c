@@ -57,13 +57,13 @@ int read_response(int socket_fd, char * buf){
 int login(char * user, char * password, int socket_fd){
     char buf[1024];
 
-    char *user_cmd = malloc(5 + strlen(user) + 2);
+    char *user_cmd = malloc(5 + strlen(user) + 3);
     user_cmd[0] = '\0';
     strcat(user_cmd, "user ");
     strcat(user_cmd, user);
     strcat(user_cmd, "\r\n");
 
-    char *password_cmd = malloc(5 + strlen(password) + 2);
+    char *password_cmd = malloc(5 + strlen(password) + 3);
     password_cmd[0] = '\0';
     strcat(password_cmd, "pass ");
     strcat(password_cmd, password);
