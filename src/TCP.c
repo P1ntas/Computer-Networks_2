@@ -35,7 +35,7 @@ int write_to_server(int sock_fd, char * cmd){
     return bytes_written;
 }
 /* reads reply from server, returns 0 if negative, 1 if positive (return value is boolean) */
-int read_reply(int socket_fd, char * buf){
+int read_response(int socket_fd, char * buf){
     FILE * socket = fdopen(socket_fd, "r");
 
     size_t bytes_read = 0;
@@ -43,23 +43,197 @@ int read_reply(int socket_fd, char * buf){
     do {
         getline(&buf, &bytes_read,socket);
         printf("%s", buf);
-    } while (buf[3] != ' ');
-   
+    } while ( !('1' <= buf[0] && buf[0] <= '5') || buf[3] != ' ');
+    if (buf[3] == ' '){
+      int code;
+      if (code == 550 || code == 530)
+      {
+        printf("Command error\n");
+        return 1;
+      }
+    }
     return 0;
 }
-int login(char * user, char * password){
+int login(char * user, char * password, int socket_fd){
+    char buf[1024];
+
+    char *user_cmd = malloc(5 + strlen(user) + 2);
+    user_cmd[0] = '\0';
+    strcat(user_cmd, "user ");
+    strcat(user_cmd, user);
+    strcat(user_cmd, "\r\n");
+
+    char *password_cmd = malloc(5 + strlen(password) + 2);
+    password_cmd[0] = '\0';
+    strcat(password_cmd, "pass ");
+    strcat(password_cmd, password);
+    strcat(password_cmd, "\r\n");
+
+
+    if (write_to_server(socket_fd, user_cmd) < 0) {
+        printf("Error writing USER command\n");
+        return -1;
+    }
+    if (read_response(socket_fd, buf)) {
+        printf("Error reading reply to USER command\n");
+        return -1;
+    }
+
+    if (write_to_server(socket_fd, password_cmd) < 0) {
+        printf("Error writing PASS command\n");
+        return -1;
+    }
+
+    if (read_response(socket_fd, buf)) {
+        printf("Error reading reply to PASS command\n");
+        return -1;
+    }
     return 0;
 }
-int enter_passive_mode(){
-    return 0;
-}
-int retrieve(char * path){
-    return 0;
-}
-int download(char * filename){
-    return 0;
-}
-int end_connection(){
+int enter_passive_mode(int socket_fd, char *ip){
+
+    char buff[1024];
+    if (write_to_server(socket_fd, "PASV\r\n") < 0) {
+        printf("Error writing PASV\n");
+        return -1;
+    }
+
+    // if (read_response(socket_fd, buff)) {
+    //     printf("Error reading reply to PASV command\n");
+    //     return -1;
+    // }
+
+    size_t bytes_read = 0;
+
+    read(socket_fd, buff, 2000);
+
+    printf("%s\n", buff);
     
+    //parse resposta
+    strtok(buff, "(");
+
+    char* ip1 = strtok(NULL, ",");   
+    char* ip2 = strtok(NULL, ",");       
+    char* ip3 = strtok(NULL, ",");     
+    char* ip4 = strtok(NULL, ",");       
+    
+    
+    char* new_ip = malloc(256);
+    new_ip[0] = '\0';
+    strcat(new_ip, ip1);
+    strcat(new_ip, ".");
+    strcat(new_ip, ip2);
+    strcat(new_ip, ".");
+    strcat(new_ip, ip3);
+    strcat(new_ip, ".");
+    strcat(new_ip, ip4);
+    
+    char* p1 = strtok(NULL, ",");       
+    char* p2 = strtok(NULL, ")");   
+
+    for (size_t i = 0; i < strlen(new_ip); i++)
+    {
+        ip[i] = new_ip[i];
+    }
+       
+
+    int new_port = atoi(p1)*256 + atoi(p2);
+
+    return new_port;
+    
+    return -1;
+}
+
+int send_command(int socket_fd, char *command){
+    int size;
+    char buffer[1024];
+
+    if((size = write(socket_fd, command, strlen(command))) <= 0){
+        printf("Error: command not sent\n");
+        return -1;
+    }
+
+    if(read_response(socket_fd, buffer) != 0){
+        printf("Error reading reply to RETR command\n");
+        return -1;
+    }
+
+    return 0;
+  
+}
+
+int retrieve_file(int socket_fd, char *command){
+    int size;
+    char buffer[1024] = {0};
+
+    if((size = write(socket_fd, command, strlen(command))) <= 0){
+        printf("Error: command not sent\n");
+        return -1;
+    }
+
+    read(socket_fd, buffer, 2000);
+
+    printf("%s\n", buffer);
+
+    strtok(buffer, "(");
+
+    char* size_string = strtok(NULL, "bytes");          
+
+    return atoi(size_string); 
+
+    return -1;
+  
+}
+
+int download(char * filename, int socketdata, int socket_fd, int file_size){
+    int file_fd;
+
+    if ((file_fd = open(filename, O_WRONLY | O_CREAT, 0777)) < 0) {
+        fprintf(stderr, "Error opening data file!\n");
+        return -1;
+    }
+
+    char buff[10024] = {0};
+    int numBytesRead=0;
+
+    while((numBytesRead = read(socketdata, buff, 10024)) > 0) {
+        file_size -= numBytesRead;
+        printf("saving... %d bytes left\n", file_size);
+        if (write(file_fd, buff, numBytesRead) < 0) {
+            fprintf(stderr, "Error writing data to file!\n");
+            return -1;
+        }
+    }
+    if(read_response(socket_fd, buff)) {
+		printf("Error reading reply\n");
+		return -1;
+	}
+    if (close(file_fd) < 0) {
+        fprintf(stderr, "Error closing file!\n");
+        return -1;
+    }
+    printf("Finished downloading requested file\n");
+    return 0;
+}
+int end_connection(int socket_fd, int socketdata){
+    char buffer[1024];
+    char quit_cmd[] = "quit\r\n";
+
+    if(write_to_server(socket_fd, quit_cmd) < 0) {
+		printf("Error writing QUIT command to server\n");
+		return -1;
+	}
+
+	if(read_response(socket_fd, buffer)) {
+		printf("Error reading reply to QUIT command\n");
+		return -1;
+	}
+
+	if(close(socket_fd) < 0 || close(socketdata)){
+		printf("Error closing sockets\n");
+		return -1;
+	}
+
+
     return 0;
 }

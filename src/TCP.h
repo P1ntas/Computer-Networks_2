@@ -17,7 +17,7 @@ typedef struct TCP {
     int socket_control;
     int socket_data;
     char new_ip[1024];
-    char new_port;
+    int new_port;
 } TCP;
 
 /* creates control socket (setting socket_fd) and connects to ftp server */
@@ -25,11 +25,12 @@ int connection_to_server(char * ip, int port);
 /* writes cmd to the server through socket_fd */
 int write_to_server(int socket_fd, char * cmd);
 /* reads reply from server*/
-int read_reply(int socket_fd, char * buf);
-int login(char * user, char * password);
-int enter_passive_mode();
-int retrieve(char * path);
-int download(char * filename);
-int end_connection();
+int read_response(int socket_fd, char * buf);
+int login(char * user, char * password,int socket_fd);
+int enter_passive_mode(int socket_fd,char *ip);
+int send_command(int socket_fd, char *command);
+int retrieve_file(int socket_fd, char *command);
+int download(char * filename, int socketdata, int socket_fd, int file_size);
+int end_connection(int socket_fd,int socketdata);
 
 #endif
