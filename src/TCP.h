@@ -28,7 +28,6 @@ int write_to_server(int socket_fd, char * cmd);
 int read_response(int socket_fd, char * buf);
 int login(char * user, char * password,int socket_fd);
 int enter_passive_mode(int socket_fd,char *ip);
-int send_command(int socket_fd, char *command);
 int retrieve_file(int socket_fd, char *command);
 int download(char * filename, int socketdata, int socket_fd, int file_size);
 int end_connection(int socket_fd,int socketdata);

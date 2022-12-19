@@ -26,9 +26,7 @@ int connection_to_server(char * ip, int port){
 int write_to_server(int sock_fd, char * cmd){
     int bytes_written= 0;
     bytes_written = write(sock_fd, cmd, strlen(cmd));
-    if (bytes_written > 0)
-        printf("Bytes escritos %d\n", bytes_written);
-    else {
+    if (!(bytes_written > 0)){
         perror("write() command not sent");
         return -1;
     }
@@ -45,7 +43,7 @@ int read_response(int socket_fd, char * buf){
         printf("%s", buf);
     } while ( !('1' <= buf[0] && buf[0] <= '5') || buf[3] != ' ');
     if (buf[3] == ' '){
-      int code;
+      int code=0;
       if (code == 550 || code == 530)
       {
         printf("Command error\n");
@@ -98,16 +96,9 @@ int enter_passive_mode(int socket_fd, char *ip){
         return -1;
     }
 
-    // if (read_response(socket_fd, buff)) {
-    //     printf("Error reading reply to PASV command\n");
-    //     return -1;
-    // }
+    read(socket_fd, buff, 1024);
 
-    size_t bytes_read = 0;
-
-    read(socket_fd, buff, 2000);
-
-    printf("%s\n", buff);
+    //printf("%s\n", buff);
     
     //parse resposta
     strtok(buff, "(");
@@ -136,7 +127,6 @@ int enter_passive_mode(int socket_fd, char *ip){
         ip[i] = new_ip[i];
     }
        
-
     int new_port = atoi(p1)*256 + atoi(p2);
 
     return new_port;
@@ -144,34 +134,16 @@ int enter_passive_mode(int socket_fd, char *ip){
     return -1;
 }
 
-int send_command(int socket_fd, char *command){
-    int size;
-    char buffer[1024];
-
-    if((size = write(socket_fd, command, strlen(command))) <= 0){
-        printf("Error: command not sent\n");
-        return -1;
-    }
-
-    if(read_response(socket_fd, buffer) != 0){
-        printf("Error reading reply to RETR command\n");
-        return -1;
-    }
-
-    return 0;
-  
-}
-
 int retrieve_file(int socket_fd, char *command){
     int size;
-    char buffer[1024] = {0};
+    char buffer[1024]= {0};
 
     if((size = write(socket_fd, command, strlen(command))) <= 0){
         printf("Error: command not sent\n");
         return -1;
     }
 
-    read(socket_fd, buffer, 2000);
+    read(socket_fd, buffer, 1024);
 
     printf("%s\n", buffer);
 
@@ -229,7 +201,7 @@ int end_connection(int socket_fd, int socketdata){
 		return -1;
 	}
 
-	if(close(socket_fd) < 0 || close(socketdata)){
+	if(close(socket_fd) < 0 || close(socketdata) < 0){
 		printf("Error closing sockets\n");
 		return -1;
 	}

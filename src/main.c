@@ -24,11 +24,11 @@ int main(int argc, char **argv) {
         printf("usage: %s ftp://[<user>:<password>]@<host>/<url-path>\n", argv[1]);
         return -1;
     }
-    printf("27\n");
+
     printf("host: %s\nurl path: %s\nuser: %s\npassword: %s\nfile name: %s\nhost name: %s\nip addr: %s\n", arguments.host, arguments.url_path, arguments.user, arguments.password, arguments.file_name, arguments.host_name, arguments.ip);
-    printf("28\n");
+   
     TCP tcp;
-    // setting socket control to connect with ftp
+   
     tcp.socket_control = connection_to_server(arguments.ip, 21);
     if (tcp.socket_control < 0){
         return -1;
@@ -50,8 +50,6 @@ int main(int argc, char **argv) {
     // go into passive mode
     port = enter_passive_mode(tcp.socket_control, ip);
 
-    printf("Entered passive mode\n");
-
     if(port == -1) {
         return -1;
     }
@@ -65,7 +63,6 @@ int main(int argc, char **argv) {
   		return -1;
     }
 
-
     char* retr_command = malloc(5 + strlen(arguments.url_path) + 3);
     retr_command[0] = '\0';
 
@@ -78,7 +75,6 @@ int main(int argc, char **argv) {
     if (file_size < 0) {
         return -1;
     }
-
 
     // download file in the other end
     if(download(arguments.file_name, tcp.socket_data, tcp.socket_control, file_size) < 0) {
