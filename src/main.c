@@ -47,6 +47,7 @@ int main(int argc, char **argv) {
 
     char ip[256] = {0};
     int port = -1;
+
     // go into passive mode
     port = enter_passive_mode(tcp.socket_control, ip);
 
@@ -85,8 +86,6 @@ int main(int argc, char **argv) {
     if(end_connection(tcp.socket_control,tcp.socket_data) < 0) {
         return -1;
     }
-
-    printf("Terminating...\n");
 
     return 0;
 }

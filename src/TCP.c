@@ -22,6 +22,7 @@ int connection_to_server(char * ip, int port){
     }
     return sockfd;
 }
+
 /* writes cmd to the server through socket_fd */
 int write_to_server(int sock_fd, char * cmd){
     int bytes_written= 0;
@@ -32,6 +33,7 @@ int write_to_server(int sock_fd, char * cmd){
     }
     return bytes_written;
 }
+
 /* reads reply from server, returns 0 if negative, 1 if positive (return value is boolean) */
 int read_response(int socket_fd, char * buf){
     FILE * socket = fdopen(socket_fd, "r");
@@ -52,6 +54,7 @@ int read_response(int socket_fd, char * buf){
     }
     return 0;
 }
+
 int login(char * user, char * password, int socket_fd){
     char buf[1024];
 
@@ -97,8 +100,6 @@ int enter_passive_mode(int socket_fd, char *ip){
     }
 
     read(socket_fd, buff, 1024);
-
-    //printf("%s\n", buff);
     
     //parse resposta
     strtok(buff, "(");
@@ -107,7 +108,6 @@ int enter_passive_mode(int socket_fd, char *ip){
     char* ip2 = strtok(NULL, ",");       
     char* ip3 = strtok(NULL, ",");     
     char* ip4 = strtok(NULL, ",");       
-    
     
     char* new_ip = malloc(256);
     new_ip[0] = '\0';
@@ -184,9 +184,10 @@ int download(char * filename, int socketdata, int socket_fd, int file_size){
         fprintf(stderr, "Error closing file!\n");
         return -1;
     }
-    printf("Finished downloading requested file\n");
+
     return 0;
 }
+
 int end_connection(int socket_fd, int socketdata){
     char buffer[1024];
     char quit_cmd[] = "quit\r\n";
@@ -205,7 +206,6 @@ int end_connection(int socket_fd, int socketdata){
 		printf("Error closing sockets\n");
 		return -1;
 	}
-
 
     return 0;
 }
