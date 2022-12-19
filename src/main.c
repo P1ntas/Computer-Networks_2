@@ -1,6 +1,13 @@
 #include "TCP.h"
 #include "parsing.h"
 
+/**
+ * @brief Main function that executes the download
+ * 
+ * @param argc number of arguments
+ * @param argv value of the arguments
+ * @return int return value
+ */
 int main(int argc, char **argv) {
 
     if (argc != 2) {
