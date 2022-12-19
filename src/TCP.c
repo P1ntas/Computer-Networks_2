@@ -23,7 +23,6 @@ int connection_to_server(char * ip, int port){
     return sockfd;
 }
 
-/* writes cmd to the server through socket_fd */
 int write_to_server(int sock_fd, char * cmd){
     int bytes_written= 0;
     bytes_written = write(sock_fd, cmd, strlen(cmd));
@@ -34,7 +33,6 @@ int write_to_server(int sock_fd, char * cmd){
     return bytes_written;
 }
 
-/* reads reply from server, returns 0 if negative, 1 if positive (return value is boolean) */
 int read_response(int socket_fd, char * buf){
     FILE * socket = fdopen(socket_fd, "r");
 
